@@ -54,7 +54,7 @@ export function SignupPageView() {
   const [step, setStep] = useState(1);
   const [firstName, setFirstName] = useState("Alex");
   const [lastName, setLastName] = useState("Johnson");
-  const [email, setEmail] = useState("alex@creatoragora.com");
+  const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("password123");
   const [promoterGoals, setPromoterGoals] = useState<string[]>(["Brand Awareness"]);
@@ -182,7 +182,7 @@ export function SignupPageView() {
       title={isWaitlistFlow ? "Join Waitlist" : "Create Account"}
       subtitle={
         isWaitlistFlow
-          ? "Reserve your spot. We will notify you as soon as CreatorAgora goes live."
+          ? "Reserve your spot. We will notify you as soon as CreatorsAgora goes live."
           : "Start launching AI-powered creator campaigns in minutes."
       }
     >

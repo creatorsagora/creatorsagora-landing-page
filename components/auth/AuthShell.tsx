@@ -24,13 +24,13 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
           <div className="absolute inset-0 bg-gradient-to-b from-black/26 via-black/30 to-black/46" />
 
           <div className="absolute left-6 top-6 z-10 inline-flex">
-            <Image alt="CreatorAgora logo" className="h-9 w-auto object-contain" height={133} src="/brand/logo-light-full.png" width={325} />
+            <Image alt="CreatorsAgora logo" className="h-9 w-auto object-contain" height={133} src="/brand/logo-light-full.png" width={325} />
           </div>
         </section>
 
         <section className="flex items-center p-4 sm:p-8">
           <div className="mx-auto w-full max-w-md">
-            <p className="section-eyebrow">Welcome to CREATORAGORA</p>
+            <p className="section-eyebrow">Welcome to CREATORSAGORA</p>
             <h2 className="mt-4 font-display text-3xl font-bold">{title}</h2>
             <p className="text-pro-muted mt-2 text-sm">{subtitle}</p>
             <div className="mt-6">{children}</div>

@@ -120,6 +120,112 @@ export async function fetchMeRequest(token: string) {
   });
 }
 
+export type DashboardOverviewResponse = {
+  wallet: {
+    availableUsd: number;
+    escrowUsd: number;
+    preferredCurrency?: string;
+  };
+  campaigns: Array<{
+    _id: string;
+    title: string;
+    status: "draft" | "pending" | "running" | "completed" | "cancelled" | string;
+    budgetUsd: number;
+    spentUsd: number;
+    metrics?: {
+      reach?: number;
+      engagement?: number;
+      conversion?: number;
+    };
+    aiPlan?: {
+      estimatedReach?: number;
+    };
+    createdAt?: string;
+    updatedAt?: string;
+  }>;
+  stats: {
+    totalCampaigns: number;
+    unreadMessages: number;
+  };
+  recentTransactions: Array<{
+    _id: string;
+    type: "deposit" | "withdrawal" | "campaign_spend" | "earning" | "fee" | string;
+    status: "pending" | "completed" | "failed" | string;
+    amountUsd: number;
+    description?: string;
+    createdAt: string;
+  }>;
+};
+
+export async function fetchDashboardRequest(token: string) {
+  return request<DashboardOverviewResponse>("/dashboard", {
+    method: "GET",
+    headers: asJsonHeaders(token)
+  });
+}
+
+export type WalletOverviewResponse = {
+  wallet: {
+    availableUsd: number;
+    escrowUsd: number;
+    preferredCurrency?: string;
+  };
+  transactions: Array<{
+    _id: string;
+    type: "deposit" | "withdrawal" | "campaign_spend" | "earning" | "fee" | string;
+    status: "pending" | "completed" | "failed" | string;
+    amountUsd: number;
+    description?: string;
+    createdAt: string;
+  }>;
+};
+
+export async function fetchWalletRequest(token: string) {
+  return request<WalletOverviewResponse>("/wallet", {
+    method: "GET",
+    headers: asJsonHeaders(token)
+  });
+}
+
+export type CampaignListResponse = {
+  campaigns: Array<{
+    _id: string;
+    title: string;
+    description: string;
+    category: string;
+    goal: "Awareness" | "Viral" | "Sales" | string;
+    budgetUsd: number;
+    spentUsd: number;
+    status: "draft" | "pending" | "running" | "completed" | "cancelled" | string;
+    metrics?: {
+      reach?: number;
+      engagement?: number;
+      conversion?: number;
+    };
+    aiPlan?: {
+      influencersCount?: number;
+      creatorsCount?: number;
+      estimatedReach?: number;
+    };
+    assignments?: Array<{
+      creator: string;
+      status: "invited" | "accepted" | "active" | "completed" | string;
+      payoutUsd?: number;
+      engagementRate?: number;
+    }>;
+    startDate?: string | null;
+    endDate?: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+  }>;
+};
+
+export async function fetchCampaignsRequest(token: string) {
+  return request<CampaignListResponse>("/campaigns", {
+    method: "GET",
+    headers: asJsonHeaders(token)
+  });
+}
 export async function updateModeRequest(token: string, mode: UserRole) {
   return request<{ token: string; user: AuthUser }>("/auth/mode", {
     method: "PATCH",

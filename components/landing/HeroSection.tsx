@@ -106,7 +106,7 @@ export function HeroSection() {
         >
           <a className="inline-flex items-center gap-3 text-base font-extrabold tracking-[-0.03em] text-[#121212]" href="#home">
             <Image
-              alt="CreatorAgora logo"
+              alt="CreatorsAgora logo"
               className="object-contain"
               height={96}
               src="/brand/logo-light-full.png"

@@ -1,6 +1,6 @@
-# CREATORAGORA Frontend
+# CREATORSAGORA Frontend
 
-This folder contains the CREATORAGORA landing page frontend built with Next.js + Tailwind CSS (web-first with mobile behavior support).
+This folder contains the CREATORSAGORA landing page frontend built with Next.js + Tailwind CSS (web-first with mobile behavior support).
 
 ## Structure
 

@@ -10,7 +10,7 @@ import { persistUserRole, readUserRole, type UserRole } from "@/lib/user-role";
 export function LoginPageView() {
   const router = useRouter();
   const [role, setRole] = useState<UserRole>("promoter");
-  const [email, setEmail] = useState("alex@creatoragora.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("password123");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");

@@ -85,7 +85,7 @@ export function AdminDashboardPageView() {
             <div>
               <p className="inline-flex items-center gap-2 text-sm text-white/80">
                 <Shield size={15} className="text-white/90" />
-                CREATORAGORA Admin Control
+                CREATORSAGORA Admin Control
               </p>
               <h1 className="mt-2 font-display text-3xl font-bold">Admin Dashboard</h1>
               <p className="mt-1 text-sm text-white/80">Logged in as {adminSession?.email ?? "admin"}</p>

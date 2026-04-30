@@ -40,7 +40,7 @@ export function StepsSection() {
               From brief to launch without the messy middle.
             </h2>
             <p className="mt-5 text-[clamp(1rem,1.45vw,1.12rem)] leading-[1.82] text-[#554f44]">
-              CreatorAGORA turns planning, matching, approvals, escrow, and reporting into one controlled flow
+              CreatorsAgora turns planning, matching, approvals, escrow, and reporting into one controlled flow
               your team can run without chasing screenshots or spreadsheet updates.
             </p>
 

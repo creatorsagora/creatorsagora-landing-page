@@ -19,7 +19,7 @@ const footerColumns = [
   }
 ];
 
-const footerWordmark = "CREATORAGORA";
+const footerWordmark = "CREATORSAGORA";
 
 export function FooterSection() {
   return (
@@ -51,7 +51,7 @@ export function FooterSection() {
               className="inline-flex items-center gap-3 text-[clamp(1rem,1.3vw,1.18rem)] font-extrabold tracking-[-0.035em]"
               href="#home"
             >
-              <Image alt="CreatorAgora logo" className="h-10 w-auto object-contain" height={133} src="/brand/logo-dark-full.png" width={325} />
+              <Image alt="CreatorsAgora logo" className="h-10 w-auto object-contain" height={133} src="/brand/logo-dark-full.png" width={325} />
             </a>
 
             <p className="mt-6 text-[0.98rem] leading-7 text-white/72">
@@ -100,7 +100,7 @@ export function FooterSection() {
         </div>
 
         <div className="mt-5 flex flex-col gap-3 text-sm text-white/46 sm:flex-row sm:items-center sm:justify-between">
-          <span>(c) 2026 CREATORAGORA. All rights reserved.</span>
+          <span>(c) 2026 CREATORSAGORA. All rights reserved.</span>
           <span>English / NGN / Lagos</span>
         </div>
       </div>

@@ -14,49 +14,52 @@ type Testimonial = {
 
 const testimonials: Testimonial[] = [
   {
-    quote:
-      "I want to hug the team for this. Campaign approvals, creator matching, and reporting finally feel effortless.",
-    miniQuote: "We launched in days and the whole workflow finally felt clear.",
+    quote: '"Transformed our campaign performance overnight. ROI up 347% in first month."',
+    miniQuote: "Campaign performance transformed",
     name: "Sarah Chen",
-    role: "Marketing Director, TechFlow",
-    date: "September 11, 2024",
-    avatar: "https://i.pravatar.cc/96?img=32"
+    role: "Head of Growth @ FintechCo",
+    date: "2 weeks ago",
+    avatar: "https://i.pravatar.cc/150?img=12"
   },
   {
-    quote:
-      "Escrow changed everything for us. We moved faster with new creators and still kept every payout structured.",
-    miniQuote: "The payout flow is smooth, protected, and much easier to trust.",
-    name: "Marcus Rodriguez",
-    role: "Creative Director, BrandLab",
-    date: "October 06, 2024",
-    avatar: "https://i.pravatar.cc/96?img=12"
+    quote: '"Best platform we\'ve used for audience targeting. Precision is unmatched."',
+    miniQuote: "Unmatched audience targeting",
+    name: "Michael Rodriguez",
+    role: "Marketing Director @ HealthTech",
+    date: "1 month ago",
+    avatar: "https://i.pravatar.cc/150?img=32"
   },
   {
-    quote:
-      "The dashboard made optimization practical. We could see what was working early and tighten the campaign while it was live.",
-    miniQuote: "Live performance feedback helped us fix weak spots before spend was wasted.",
-    name: "Emily Johnson",
-    role: "Brand Manager, RetailMax",
-    date: "November 19, 2024",
-    avatar: "https://i.pravatar.cc/96?img=47"
+    quote: '"Seamless integration, incredible results. Our engagement doubled instantly."',
+    miniQuote: "Engagement doubled instantly",
+    name: "Emma Wilson",
+    role: "CMO @ SaaS Startup",
+    date: "3 weeks ago",
+    avatar: "https://i.pravatar.cc/150?img=47"
   },
   {
-    quote:
-      "Matching quality jumped fast. We stopped wasting cycles on back-and-forth and started every launch with the right creators already lined up.",
-    miniQuote: "We finally had a cleaner shortlist before the campaign clock started.",
-    name: "Aisha Bello",
-    role: "Growth Lead, Nova House",
-    date: "January 18, 2025",
-    avatar: "https://i.pravatar.cc/96?img=5"
+    quote: '"From setup to scale-up, everything works perfectly. Highly recommend!"',
+    miniQuote: "Perfect from setup to scale-up",
+    name: "David Kim",
+    role: "Growth Lead @ Ecommerce",
+    date: "4 days ago",
+    avatar: "https://i.pravatar.cc/150?img=21"
   },
   {
-    quote:
-      "The control layer gave finance, ops, and marketing one source of truth. Everyone moved faster because nobody was guessing anymore.",
-    miniQuote: "The full team could track decisions without chasing updates in Slack.",
-    name: "Daniel Kim",
-    role: "Operations Manager, Northline",
-    date: "February 07, 2025",
-    avatar: "https://i.pravatar.cc/96?img=15"
+    quote: '"Analytics are gold. Real-time insights changed how we optimize campaigns."',
+    miniQuote: "Real-time insights changed everything",
+    name: "Lisa Patel",
+    role: "Performance Marketer @ Agency",
+    date: "2 months ago",
+    avatar: "https://i.pravatar.cc/150?img=38"
+  },
+  {
+    quote: '"Support team is phenomenal. Went live in hours with zero headaches."',
+    miniQuote: "Live in hours with zero headaches",
+    name: "James O\'Connor",
+    role: "Founder @ Creator Platform",
+    date: "1 week ago",
+    avatar: "https://i.pravatar.cc/150?img=5"
   }
 ];
 

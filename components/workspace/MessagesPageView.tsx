@@ -73,98 +73,23 @@ const appNav: AppNavItem[] = [
   { label: "Settings", href: "/settings", icon: Settings }
 ];
 
-const campaignThreads: Thread[] = [
-  {
-    name: "@sarah_lifestyle",
-    campaign: "Summer Fashion Launch",
-    snippet: "Final carousel draft uploaded for approval.",
-    time: "2m",
-    unread: 2,
-    typing: true,
-    active: true,
-    tone: "cyan",
-    status: "Running"
-  },
-  {
-    name: "@tech_marcus",
-    campaign: "Tech Product Review",
-    snippet: "Can we lock content timeline for tomorrow?",
-    time: "1h",
-    tone: "purple",
-    status: "Pending"
-  },
-  {
-    name: "@emma_beauty",
-    campaign: "Fitness Challenge",
-    snippet: "Thumbnail options are ready.",
-    time: "3h",
-    tone: "orange",
-    status: "Review"
-  },
-  {
-    name: "CREATORAGORA Support",
-    campaign: "Escrow and Payouts",
-    snippet: "Milestone payout processed successfully.",
-    time: "1d",
-    tone: "green",
-    status: "Running"
-  }
-];
+const campaignThreads: Thread[] = [];
 
-const chatMessages: ChatMessage[] = [
-  {
-    author: "Sarah",
-    text: "Hi. I finished the main visuals for Summer Fashion Launch. Sharing the first version for your review.",
-    time: "01:20 AM",
-    tone: "cyan"
-  },
-  {
-    author: "Alex",
-    text: "Great quality. Please adjust frame three so the product logo has more room.",
-    time: "01:27 AM",
-    mine: true,
-    tone: "purple"
-  },
-  {
-    author: "Sarah",
-    text: "Understood. I will update and resend in 30 minutes with final copy options.",
-    time: "01:29 AM",
-    tone: "cyan"
-  },
-  {
-    author: "System",
-    text: "External contact detected in draft message. Message blocked by AI moderation.",
-    time: "01:33 AM",
-    system: true,
-    tone: "orange"
-  },
-  {
-    author: "Alex",
-    text: "Looks good now. Approved. Proceed with posting and share analytics after launch window.",
-    time: "01:36 AM",
-    mine: true,
-    tone: "purple"
-  }
-];
+const chatMessages: ChatMessage[] = [];
 
 const milestones = [
-  { label: "Created", complete: true },
-  { label: "Assigned", complete: true },
-  { label: "Live", complete: true },
+  { label: "Created", complete: false },
+  { label: "Assigned", complete: false },
+  { label: "Live", complete: false },
   { label: "Review", complete: false }
 ];
 
-const approvals: Approval[] = [
-  { title: "Instagram carousel copy", assignee: "@sarah_lifestyle", state: "Approved" },
-  { title: "Reel voiceover draft", assignee: "@emma_beauty", state: "In Review" },
-  { title: "TikTok hook variant", assignee: "@tech_marcus", state: "Pending" }
-];
+const approvals: Approval[] = [];
 
-const creators = [
-  { name: "@sarah_lifestyle", status: "Live" },
-  { name: "@tech_marcus", status: "Drafting" },
-  { name: "@emma_beauty", status: "Awaiting Approval" }
-];
+const creators: Array<{
+  name: string;
+  status: string;
+}> = [];
 
 function avatarTone(tone: Tone): string {
   if (tone === "purple") return "from-[#5e52d7] to-[#8b7dff]";

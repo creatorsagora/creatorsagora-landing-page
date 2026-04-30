@@ -10,7 +10,7 @@ export default function WaitlistSuccessPage() {
           Waitlist Confirmed
         </div>
 
-        <h1 className="mt-4 font-display text-3xl font-bold">You are on the CreatorAgora waitlist.</h1>
+        <h1 className="mt-4 font-display text-3xl font-bold">You are on the CreatorsAgora waitlist.</h1>
         <p className="text-pro-muted mt-2 max-w-xl text-sm leading-6">
           Thanks for registering. You will be notified by email once accounts are activated for launch.
           Until then, dashboard access is paused for waitlist members.
@@ -21,7 +21,7 @@ export default function WaitlistSuccessPage() {
           <div>
             <p className="text-sm font-semibold">What happens next?</p>
             <p className="text-pro-muted mt-1 text-sm">
-              When CreatorAgora goes live, we will send a bulk launch notification and your account access will be enabled.
+              When CreatorsAgora goes live, we will send a bulk launch notification and your account access will be enabled.
             </p>
           </div>
         </div>

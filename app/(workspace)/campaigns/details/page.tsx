@@ -12,8 +12,8 @@ export default function CampaignDetailsPage() {
 
   return (
     <WorkspaceShell
-      title="Summer Fashion Launch"
-      subtitle="Campaign ID: CF-284-001"
+      title="Campaign Details"
+      subtitle="Live campaign status, budget, and performance"
       topActions={
         <>
           <button className="btn-pro-secondary inline-flex h-10 items-center gap-1.5 px-4 py-0 text-sm">

@@ -8,25 +8,19 @@ import {
   ChevronsLeft,
   ChevronsRight,
   LayoutDashboard,
-  LifeBuoy,
   Menu,
   Megaphone,
   MessageSquareText,
-  PlusCircle,
-  Repeat2,
   Settings,
-  Sparkles,
   Wallet,
   X,
   type LucideIcon
 } from "lucide-react";
-import { HeaderLanguagePill, HeaderNotificationsButton, HeaderUserDropdown } from "@/components/app-shell/HeaderUserControls";
+import { HeaderNotificationsButton, HeaderUserDropdown } from "@/components/app-shell/HeaderUserControls";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { DashboardBottomTabs } from "@/components/workspace/DashboardBottomTabs";
 import { useAuthUser } from "@/hooks/useAuthUser";
-import { useUserRole } from "@/hooks/useUserRole";
-import { canCreateCampaign, type UserRole } from "@/lib/user-role";
 
 type WorkspaceShellProps = {
   title: string;
@@ -47,7 +41,7 @@ const navItems: NavItem[] = [
   { icon: Wallet, label: "Wallet", href: "/wallet" },
   { icon: MessageSquareText, label: "Messages", href: "/messages" },
   { icon: BarChart3, label: "Analytics", href: "/analytics" },
-  { icon: Settings, label: "Settings", href: "/settings" }
+  { icon: Settings, label: "Settings", href: "/settings/profile" }
 ];
 
 function isItemActive(pathname: string, href: string): boolean {
@@ -60,8 +54,6 @@ function SidebarContent({
   pathname,
   onNavigate,
   collapsed,
-  role,
-  onRoleSwitch,
   userName,
   userEmail,
   userInitials
@@ -69,14 +61,10 @@ function SidebarContent({
   pathname: string;
   onNavigate?: () => void;
   collapsed?: boolean;
-  role: UserRole;
-  onRoleSwitch: (nextRole: UserRole) => void;
   userName: string;
   userEmail: string;
   userInitials: string;
 }) {
-  const allowCampaignCreation = canCreateCampaign(role);
-
   return (
     <div className="flex h-full flex-col">
       <div className={`flex h-16 items-center border-b workspace-divider ${collapsed ? "justify-center px-2" : "justify-between px-4"}`}>
@@ -113,81 +101,6 @@ function SidebarContent({
       </nav>
 
       <div className={`mt-auto border-t workspace-divider ${collapsed ? "p-2" : "p-4"}`}>
-        {collapsed ? (
-          <div className="mb-2 grid gap-1">
-            {allowCampaignCreation ? (
-              <Link
-                className="workspace-card-soft inline-flex items-center justify-center p-2 text-pro-accent hover:bg-pro-primary/10"
-                href="/campaigns/create"
-                onClick={onNavigate}
-                title="Create campaign"
-              >
-                <PlusCircle size={15} />
-              </Link>
-            ) : (
-              <button
-                className="workspace-card-soft inline-flex items-center justify-center p-2 text-pro-accent hover:bg-pro-primary/10"
-                onClick={() => {
-                  onRoleSwitch("promoter");
-                  onNavigate?.();
-                }}
-                title="Switch to promoter mode"
-                type="button"
-              >
-                <Repeat2 size={15} />
-              </button>
-            )}
-            <Link
-              className="workspace-card-soft inline-flex items-center justify-center p-2 text-pro-muted hover:bg-pro-primary/10"
-              href="/messages"
-              onClick={onNavigate}
-              title="Support inbox"
-            >
-              <LifeBuoy size={15} />
-            </Link>
-          </div>
-        ) : (
-          <div className="mb-3 workspace-card-soft border-pro-primary/25 bg-gradient-to-br from-pro-primary/20 to-pro-accent/10 p-3">
-            <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-pro-main">
-              <Sparkles size={14} className="text-pro-accent" />
-              Quick Actions
-            </p>
-            <p className="mt-1 text-xs text-pro-muted">Start faster or reach support quickly.</p>
-            <div className="mt-3 grid gap-1.5">
-              {allowCampaignCreation ? (
-                <Link
-                  className="inline-flex items-center gap-2 rounded-md border border-pro-surface bg-pro-primary/10 px-2.5 py-1.5 text-xs hover:bg-pro-primary/15"
-                  href="/campaigns/create"
-                  onClick={onNavigate}
-                >
-                  <PlusCircle size={13} />
-                  New Campaign
-                </Link>
-              ) : (
-                <button
-                  className="inline-flex items-center gap-2 rounded-md border border-pro-surface bg-pro-primary/10 px-2.5 py-1.5 text-left text-xs hover:bg-pro-primary/15"
-                  onClick={() => {
-                    onRoleSwitch("promoter");
-                    onNavigate?.();
-                  }}
-                  type="button"
-                >
-                  <Repeat2 size={13} />
-                  Switch To Promoter
-                </button>
-              )}
-              <Link
-                className="inline-flex items-center gap-2 rounded-md border border-pro-surface bg-pro-primary/10 px-2.5 py-1.5 text-xs hover:bg-pro-primary/15"
-                href="/messages"
-                onClick={onNavigate}
-              >
-                <LifeBuoy size={13} />
-                Support Inbox
-              </Link>
-            </div>
-          </div>
-        )}
-
         <div className={`workspace-card-soft flex ${collapsed ? "justify-center p-2" : "items-center gap-3 p-3"}`}>
           <span className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-[#30416d] to-[#4C3AFF] text-xs font-semibold">{userInitials}</span>
           {!collapsed ? (
@@ -204,14 +117,12 @@ function SidebarContent({
 
 export function WorkspaceShell({ title, subtitle, topActions, children }: WorkspaceShellProps) {
   const pathname = usePathname();
-  const { ready, role, setRole } = useUserRole();
   const { user, initials } = useAuthUser();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
   const currentPath = useMemo(() => pathname ?? "/dashboard", [pathname]);
-  const effectiveRole: UserRole = ready ? role : "creator";
-  const displayName = user ? `${user.firstName} ${user.lastName}` : "Alex Johnson";
-  const displayEmail = user?.email ?? "alex@creatoragora.com";
+  const displayName = user ? `${user.firstName} ${user.lastName}` : "";
+  const displayEmail = user?.email ?? "";
 
   return (
     <div className="workspace-shell">
@@ -225,8 +136,6 @@ export function WorkspaceShell({ title, subtitle, topActions, children }: Worksp
           <SidebarContent
             pathname={currentPath}
             collapsed={desktopCollapsed}
-            onRoleSwitch={setRole}
-            role={effectiveRole}
             userName={displayName}
             userEmail={displayEmail}
             userInitials={initials}
@@ -266,7 +175,6 @@ export function WorkspaceShell({ title, subtitle, topActions, children }: Worksp
 
               <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
                 <div className="hidden items-center gap-2 md:flex">{topActions}</div>
-                <HeaderLanguagePill />
                 <ThemeToggle compact />
                 <HeaderNotificationsButton />
                 <HeaderUserDropdown />
@@ -305,8 +213,6 @@ export function WorkspaceShell({ title, subtitle, topActions, children }: Worksp
             <SidebarContent
               pathname={currentPath}
               onNavigate={() => setMobileOpen(false)}
-              onRoleSwitch={setRole}
-              role={effectiveRole}
               userName={displayName}
               userEmail={displayEmail}
               userInitials={initials}

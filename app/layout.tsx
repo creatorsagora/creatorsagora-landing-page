@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "CREATORAGORA | AI-Powered Creator Marketplace",
+  title: "CREATORSAGORA | AI-Powered Creator Marketplace",
   description:
     "Launch, manage, and optimize creator campaigns with AI recommendations, escrow-protected payments, and real-time analytics."
 };

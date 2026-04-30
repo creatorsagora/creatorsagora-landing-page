@@ -75,12 +75,10 @@ const socialLinks: SocialLink[] = [
   }
 ];
 
-const influencerStats = [
-  { label: "Instagram", value: "25.4K" },
-  { label: "X", value: "12.1K" },
-  { label: "TikTok", value: "8.2K" },
-  { label: "YouTube", value: "8.7K" }
-];
+const influencerStats: Array<{
+  label: string;
+  value: string;
+}> = [];
 
 export function ProfileSettingsPageView() {
   const { role, setRole, creatorBadgeStatus, hasInfluencerBadge, setInfluencerBadgeStatus } = useUserRole();
@@ -101,8 +99,8 @@ export function ProfileSettingsPageView() {
               AJ
             </span>
             <div>
-              <p className="text-2xl font-semibold">@alexjohnson_creator</p>
-              <p className="text-pro-muted text-sm">Account ID: PR8-2456789</p>
+              <p className="text-2xl font-semibold"></p>
+              <p className="text-pro-muted text-sm">Account ID:</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <span className="workspace-badge border-pro-success/30 bg-pro-success/10 text-pro-success">Email Verified</span>
                 <span className="workspace-badge border-pro-success/30 bg-pro-success/10 text-pro-success">Phone Verified</span>
@@ -128,12 +126,12 @@ export function ProfileSettingsPageView() {
             <article className="workspace-card-soft p-4">
               <h3 className="font-display text-lg font-semibold">Personal Information</h3>
               <div className="mt-3 grid gap-3">
-                <input className="workspace-input" defaultValue="Alex Johnson" />
-                <input className="workspace-input" defaultValue="alex@creatoragora.com" />
-                <input className="workspace-input" defaultValue="+234 801 234 5678" />
-                <textarea className="workspace-input h-20 resize-none py-3" defaultValue="Tell us about yourself..." />
-                <input className="workspace-input" defaultValue="Lagos, Nigeria" />
-                <input className="workspace-input" defaultValue="https://yourwebsite.com" />
+                <input className="workspace-input" defaultValue="" />
+                <input className="workspace-input" defaultValue="" />
+                <input className="workspace-input" defaultValue="" />
+                <textarea className="workspace-input h-20 resize-none py-3" defaultValue="" />
+                <input className="workspace-input" defaultValue="" />
+                <input className="workspace-input" defaultValue="" />
               </div>
             </article>
 

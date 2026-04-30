@@ -9,7 +9,7 @@ const tabs = [
   { label: "Campaigns", href: "/campaigns/details", icon: Megaphone },
   { label: "Wallet", href: "/wallet", icon: Wallet },
   { label: "Messages", href: "/messages", icon: MessageSquareText },
-  { label: "Profile", href: "/settings", icon: UserCircle2 }
+  { label: "Profile", href: "/settings/profile", icon: UserCircle2 }
 ];
 
 function isTabActive(pathname: string, href: string): boolean {

@@ -25,12 +25,12 @@ export function CreateCampaignPageView() {
       <div className="space-y-4">
         <div>
           <label className="text-pro-muted mb-1.5 block text-sm">Campaign Name</label>
-          <input className="workspace-input" defaultValue="Summer Fashion Launch" />
+          <input className="workspace-input" defaultValue="" />
         </div>
 
         <div>
           <label className="text-pro-muted mb-1.5 block text-sm">What are you promoting?</label>
-          <textarea className="workspace-input h-28 resize-none py-3" defaultValue="Describe what you are promoting..." />
+          <textarea className="workspace-input h-28 resize-none py-3" defaultValue="" />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -62,11 +62,11 @@ export function CreateCampaignPageView() {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label className="text-pro-muted mb-1.5 block text-sm">Start Date</label>
-            <input className="workspace-input" defaultValue="2026-12-01" />
+            <input className="workspace-input" defaultValue="" />
           </div>
           <div>
             <label className="text-pro-muted mb-1.5 block text-sm">End Date</label>
-            <input className="workspace-input" defaultValue="2026-12-30" />
+            <input className="workspace-input" defaultValue="" />
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export function CreateCampaignPageView() {
 
         <div>
           <label className="text-pro-muted mb-1.5 block text-sm">Target Audience Location</label>
-          <input className="workspace-input" defaultValue="Lagos, Abuja, Port Harcourt" />
+          <input className="workspace-input" defaultValue="" />
         </div>
 
         <div>

@@ -8,8 +8,8 @@ import { adminLoginRequest, persistAdminSession } from "@/lib/auth-client";
 
 export function AdminLoginPageView() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@creatoragora.com");
-  const [password, setPassword] = useState("CreatoragoraAdmin@2026");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -29,7 +29,7 @@ export function AdminLoginPageView() {
   };
 
   return (
-    <AuthShell title="Admin Login" subtitle="Separate secure access for CREATORAGORA administrators.">
+    <AuthShell title="Admin Login" subtitle="Separate secure access for CREATORSAGORA administrators.">
       <form className="space-y-3" onSubmit={handleSubmit}>
         <div className="rounded-xl border border-pro-warning/30 bg-pro-warning/10 px-3 py-2 text-sm text-pro-main">
           <p className="inline-flex items-center gap-2 font-semibold">

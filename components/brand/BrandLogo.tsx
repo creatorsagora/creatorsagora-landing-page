@@ -30,7 +30,7 @@ export function BrandLogo({ compact = false, className, priority = false }: Bran
 
   return (
     <Image
-      alt={compact ? "CreatorAgora mark" : "CreatorAgora logo"}
+      alt={compact ? "CreatorsAgora mark" : "CreatorsAgora logo"}
       className={cn(
         "object-contain",
         compact ? "h-8 w-8" : "h-10 w-auto max-w-[180px]",

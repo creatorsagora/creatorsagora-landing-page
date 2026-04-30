@@ -23,8 +23,8 @@ export function SettingsScaffold({ activeTab, children }: SettingsScaffoldProps)
           <div className="flex items-center gap-3">
             <span className="grid size-16 place-items-center rounded-xl bg-gradient-to-br from-[#2f3f6e] to-[#4C3AFF] text-lg font-bold">AJ</span>
             <div>
-              <p className="text-2xl font-semibold">@alexjohnson_creator</p>
-              <p className="text-pro-muted text-sm">Account ID: PR8-2456789</p>
+              <p className="text-2xl font-semibold"></p>
+              <p className="text-pro-muted text-sm">Account ID:</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 <span className="workspace-badge border-pro-success/30 bg-pro-success/10 text-pro-success">Email Verified</span>
                 <span className="workspace-badge border-pro-success/30 bg-pro-success/10 text-pro-success">Phone Verified</span>

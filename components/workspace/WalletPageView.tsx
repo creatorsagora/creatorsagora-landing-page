@@ -1,35 +1,48 @@
 "use client";
 
-import { ArrowDownLeft, ArrowUpRight, Plus, RefreshCw, type LucideIcon } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, RefreshCw, type LucideIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { useCurrency } from "@/components/preferences/CurrencyProvider";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { usePagination } from "@/hooks/usePagination";
+import { fetchWalletRequest, readAuthSession, type WalletOverviewResponse } from "@/lib/auth-client";
 
-const escrowFunds = [
-  { name: "Summer Fashion Launch", amountUsd: 580000 / 1550, status: "Active", release: "Expected release: Dec 15, 2026" },
-  { name: "Tech Product Review", amountUsd: 370000 / 1550, status: "Pending", release: "Expected release: Dec 20, 2026" }
-];
+type WalletAction = {
+  title: string;
+  subtitle: string;
+  icon: LucideIcon;
+  iconClass: string;
+};
 
-const transactions = [
-  { type: "Deposit from GTBank", amountUsd: 500000 / 1550, state: "Completed", date: "Dec 12, 2026 - 2:34 PM" },
-  { type: "Campaign Payment - Summer Fashion Launch", amountUsd: -(450000 / 1550), state: "Completed", date: "Dec 11, 2026 - 10:15 AM" },
-  { type: "Withdrawal to GTBank", amountUsd: -(200000 / 1550), state: "Processing", date: "Dec 10, 2026 - 3:22 PM" },
-  { type: "Platform Fee", amountUsd: -(12500 / 1550), state: "Completed", date: "Dec 9, 2026 - 11:30 AM" }
-];
+type EscrowFund = {
+  name: string;
+  release: string;
+  amountUsd: number;
+  status: "Completed" | "Processing" | "Pending";
+};
 
-const monthlyFlowData = [
-  { month: "Oct", deposited: 520000 / 1550, withdrawn: 330000 / 1550, spend: 420000 / 1550 },
-  { month: "Nov", deposited: 780000 / 1550, withdrawn: 460000 / 1550, spend: 610000 / 1550 },
-  { month: "Dec", deposited: 980000 / 1550, withdrawn: 680500 / 1550, spend: 860000 / 1550 }
-];
+type WalletTransaction = {
+  id: string;
+  title: string;
+  date: string;
+  amountUsd: number;
+  state: "Completed" | "Processing" | "Pending";
+};
 
-const spendMixData = [
-  { key: "campaignSpend", name: "Campaign Spend", value: 1890000 / 1550 },
-  { key: "withdrawals", name: "Withdrawals", value: 680500 / 1550 },
-  { key: "fees", name: "Fees", value: 12500 / 1550 }
-];
+type MonthlyFlowPoint = {
+  month: string;
+  deposited: number;
+  withdrawn: number;
+  spend: number;
+};
+
+type SpendMixPoint = {
+  key: "campaignSpend" | "withdrawals" | "fees";
+  name: string;
+  value: number;
+};
 
 const flowChartConfig = {
   deposited: { label: "Deposited", theme: { light: "#00A778", dark: "#00C896" } },
@@ -43,12 +56,7 @@ const spendMixChartConfig = {
   fees: { label: "Fees", theme: { light: "#E89B27", dark: "#FFB020" } }
 } satisfies ChartConfig;
 
-function formatCompactNumber(value: number) {
-  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
-  return Math.round(value).toString();
-}
-
-const walletActions: { title: string; subtitle: string; icon: LucideIcon; iconClass: string }[] = [
+const walletActions: WalletAction[] = [
   {
     title: "Add Funds",
     subtitle: "Deposit money to wallet",
@@ -69,22 +77,184 @@ const walletActions: { title: string; subtitle: string; icon: LucideIcon; iconCl
   }
 ];
 
-function stateClass(state: string): string {
+function formatCompactNumber(value: number) {
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+  return Math.round(value).toString();
+}
+
+function stateClass(state: "Completed" | "Processing" | "Pending"): string {
   if (state === "Completed") return "bg-pro-success/15 text-pro-success";
   if (state === "Processing") return "bg-pro-warning/15 text-pro-warning";
   return "bg-white/10 text-pro-main";
 }
 
+function statusToState(status: string): "Completed" | "Processing" | "Pending" {
+  if (status === "completed") return "Completed";
+  if (status === "failed") return "Pending";
+  return "Processing";
+}
+
+function transactionTitle(type: string, description?: string) {
+  if (description?.trim()) return description.trim();
+  if (type === "deposit") return "Wallet Deposit";
+  if (type === "withdrawal") return "Wallet Withdrawal";
+  if (type === "campaign_spend") return "Campaign Spend";
+  if (type === "earning") return "Campaign Earning";
+  if (type === "fee") return "Platform Fee";
+  return "Wallet Activity";
+}
+
+function buildMonthlyFlow(transactions: WalletOverviewResponse["transactions"]): MonthlyFlowPoint[] {
+  const now = new Date();
+  const months: Array<{ key: string; month: string }> = [];
+
+  for (let i = 5; i >= 0; i -= 1) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+    const month = date.toLocaleString(undefined, { month: "short" });
+    months.push({ key, month });
+  }
+
+  const grouped = new Map<string, { deposited: number; withdrawn: number; spend: number }>();
+  for (const item of transactions) {
+    const date = new Date(item.createdAt);
+    if (Number.isNaN(date.getTime())) continue;
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+    if (!grouped.has(key)) grouped.set(key, { deposited: 0, withdrawn: 0, spend: 0 });
+    const bucket = grouped.get(key);
+    if (!bucket) continue;
+
+    if (item.type === "deposit" || item.type === "earning") {
+      bucket.deposited += Math.abs(item.amountUsd);
+    } else if (item.type === "withdrawal") {
+      bucket.withdrawn += Math.abs(item.amountUsd);
+    } else if (item.type === "campaign_spend" || item.type === "fee") {
+      bucket.spend += Math.abs(item.amountUsd);
+    }
+  }
+
+  return months.map((entry) => {
+    const bucket = grouped.get(entry.key);
+    return {
+      month: entry.month,
+      deposited: bucket?.deposited ?? 0,
+      withdrawn: bucket?.withdrawn ?? 0,
+      spend: bucket?.spend ?? 0
+    };
+  });
+}
+
 export function WalletPageView() {
   const { formatDualFromUsd, formatSignedDualFromUsd } = useCurrency();
+  const [data, setData] = useState<WalletOverviewResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    const loadWallet = async () => {
+      const session = readAuthSession();
+      if (!session?.token) {
+        if (active) {
+          setError("Please sign in to view wallet.");
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetchWalletRequest(session.token);
+        if (!active) return;
+        setData(response);
+        setError("");
+      } catch (err) {
+        if (!active) return;
+        setError(err instanceof Error ? err.message : "Unable to load wallet data");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void loadWallet();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const availableBalance = useMemo(() => formatDualFromUsd(data?.wallet.availableUsd ?? 0), [data, formatDualFromUsd]);
+  const totalEscrow = useMemo(() => formatDualFromUsd(data?.wallet.escrowUsd ?? 0), [data, formatDualFromUsd]);
+
+  const transactions = useMemo<WalletTransaction[]>(() => {
+    const source = data?.transactions ?? [];
+    return source.map((entry) => {
+      const date = new Date(entry.createdAt);
+      const timestamp = Number.isNaN(date.getTime())
+        ? "Unknown time"
+        : `${date.toLocaleDateString()} · ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+      return {
+        id: entry._id,
+        title: transactionTitle(entry.type, entry.description),
+        date: timestamp,
+        amountUsd: Number(entry.amountUsd ?? 0),
+        state: statusToState(entry.status)
+      };
+    });
+  }, [data]);
+
+  const escrowFunds = useMemo<EscrowFund[]>(() => {
+    const escrowUsd = Number(data?.wallet.escrowUsd ?? 0);
+    if (escrowUsd <= 0) return [];
+    return [
+      {
+        name: "Funds locked in active campaigns",
+        release: "Released as campaign milestones are completed",
+        amountUsd: escrowUsd,
+        status: "Processing"
+      }
+    ];
+  }, [data]);
+
+  const totals = useMemo(() => {
+    let deposited = 0;
+    let withdrawn = 0;
+    let campaignSpend = 0;
+    let fees = 0;
+
+    for (const item of data?.transactions ?? []) {
+      const amount = Math.abs(Number(item.amountUsd ?? 0));
+      if (item.type === "deposit" || item.type === "earning") deposited += amount;
+      if (item.type === "withdrawal") withdrawn += amount;
+      if (item.type === "campaign_spend") campaignSpend += amount;
+      if (item.type === "fee") fees += amount;
+    }
+
+    return {
+      deposited,
+      withdrawn,
+      campaignSpend,
+      fees
+    };
+  }, [data]);
+
+  const monthlyFlowData = useMemo<MonthlyFlowPoint[]>(() => buildMonthlyFlow(data?.transactions ?? []), [data]);
+
+  const spendMixData = useMemo<SpendMixPoint[]>(
+    () => [
+      { key: "campaignSpend", name: "Campaign Spend", value: totals.campaignSpend },
+      { key: "withdrawals", name: "Withdrawals", value: totals.withdrawn },
+      { key: "fees", name: "Fees", value: totals.fees }
+    ],
+    [totals]
+  );
+
+  const totalDeposited = formatDualFromUsd(totals.deposited);
+  const totalWithdrawn = formatDualFromUsd(totals.withdrawn);
+  const totalCampaignSpend = formatDualFromUsd(totals.campaignSpend);
+  const totalOutflow = formatDualFromUsd(totals.withdrawn + totals.campaignSpend + totals.fees).local;
+
   const escrowPagination = usePagination(escrowFunds, 5);
   const transactionPagination = usePagination(transactions, 5);
-  const availableBalance = formatDualFromUsd(2847650 / 1550);
-  const totalEscrow = formatDualFromUsd((580000 + 370000) / 1550);
-  const totalDeposited = formatDualFromUsd(3250000 / 1550);
-  const totalWithdrawn = formatDualFromUsd(680500 / 1550);
-  const totalCampaignSpend = formatDualFromUsd(1890000 / 1550);
-  const totalOutflow = formatDualFromUsd((1890000 + 680500 + 12500) / 1550).local;
 
   return (
     <div className="space-y-5">
@@ -96,12 +266,15 @@ export function WalletPageView() {
             <p className="text-sm text-white/80">Available Balance</p>
             <p className="mono-stat mt-2 text-[clamp(1.9rem,5vw,3rem)] font-extrabold">{availableBalance.local}</p>
             <p className="mt-1 text-xs text-white/70">
-              Last updated 2 minutes ago{availableBalance.usd ? ` | ${availableBalance.usd}` : ""}
+              {loading ? "Syncing wallet..." : "Realtime wallet balance"}
+              {availableBalance.usd ? ` | ${availableBalance.usd}` : ""}
             </p>
           </div>
-          <p className="text-sm text-white/85">+8.2% from last month</p>
+          <p className="text-sm text-white/85">Escrow locked: {totalEscrow.local}</p>
         </div>
       </section>
+
+      {error ? <section className="rounded-xl border border-[#ff4d6d66] bg-[#ff4d6d1a] px-4 py-3 text-sm text-[#ff8b9e]">{error}</section> : null}
 
       <section className="grid gap-4 md:grid-cols-3">
         {walletActions.map((action) => {
@@ -133,26 +306,30 @@ export function WalletPageView() {
               {totalEscrow.usd ? <p className="text-xs text-pro-muted">{totalEscrow.usd}</p> : null}
             </div>
           </div>
-          <div className="space-y-2">
-            {escrowPagination.pageItems.map((fund) => {
-              const amount = formatDualFromUsd(fund.amountUsd);
-              return (
-                <div className="workspace-card-soft p-3" key={fund.name}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-semibold">{fund.name}</p>
-                      <p className="mt-1 text-xs text-pro-muted">{fund.release}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="mono-stat text-sm">{amount.local}</p>
-                      {amount.usd ? <p className="text-xs text-pro-muted">{amount.usd}</p> : null}
-                      <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs ${stateClass(fund.status)}`}>{fund.status}</span>
+          {escrowPagination.pageItems.length === 0 ? (
+            <p className="text-sm text-pro-muted">No escrow funds yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {escrowPagination.pageItems.map((fund) => {
+                const amount = formatDualFromUsd(fund.amountUsd);
+                return (
+                  <div className="workspace-card-soft p-3" key={fund.name}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-semibold">{fund.name}</p>
+                        <p className="mt-1 text-xs text-pro-muted">{fund.release}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="mono-stat text-sm">{amount.local}</p>
+                        {amount.usd ? <p className="text-xs text-pro-muted">{amount.usd}</p> : null}
+                        <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs ${stateClass(fund.status)}`}>{fund.status}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
           <PaginationControls
             fromItem={escrowPagination.fromItem}
             onPageChange={escrowPagination.setPage}
@@ -168,26 +345,11 @@ export function WalletPageView() {
         <article className="workspace-card p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-xl font-semibold">Payment Methods</h2>
-            <button className="btn-pro-primary inline-flex h-9 items-center gap-1.5 px-3 py-0 text-sm">
-              <Plus size={14} />
-              Add Method
-            </button>
           </div>
-          <div className="space-y-2">
-            <div className="workspace-card-soft p-3">
-              <p className="font-semibold">GTBank ****4521</p>
-              <p className="text-xs text-pro-muted">Savings Account - Default</p>
-            </div>
-            <div className="workspace-card-soft grid grid-cols-2 gap-2 p-3">
-              <div>
-                <p className="font-semibold">Visa ****3142</p>
-                <p className="text-xs text-pro-muted">Expires 12/26</p>
-              </div>
-              <div>
-                <p className="font-semibold">USDT Wallet</p>
-                <p className="text-xs text-pro-muted">TRC20 0x...BAA2</p>
-              </div>
-            </div>
+          <div className="workspace-card-soft p-4">
+            <p className="text-sm text-pro-muted">
+              No payment methods connected yet. Add a bank or wallet in the live flow to enable withdrawals.
+            </p>
           </div>
         </article>
       </section>
@@ -195,24 +357,28 @@ export function WalletPageView() {
       <section className="grid gap-4 xl:grid-cols-[1.15fr_1fr]">
         <article className="workspace-card p-4">
           <h2 className="font-display text-xl font-semibold">Transaction History</h2>
-          <div className="mt-3 divide-y workspace-divider">
-            {transactionPagination.pageItems.map((transaction) => {
-              const amount = formatSignedDualFromUsd(transaction.amountUsd);
-              return (
-                <div className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between" key={transaction.type}>
-                  <div>
-                    <p className="text-sm text-pro-main">{transaction.type}</p>
-                    <p className="text-xs text-pro-muted">{transaction.date}</p>
+          {transactionPagination.pageItems.length === 0 ? (
+            <p className="mt-3 text-sm text-pro-muted">No transactions yet. Deposits and campaign spending will appear here.</p>
+          ) : (
+            <div className="mt-3 divide-y workspace-divider">
+              {transactionPagination.pageItems.map((transaction) => {
+                const amount = formatSignedDualFromUsd(transaction.amountUsd);
+                return (
+                  <div className="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between" key={transaction.id}>
+                    <div>
+                      <p className="text-sm text-pro-main">{transaction.title}</p>
+                      <p className="text-xs text-pro-muted">{transaction.date}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="mono-stat text-sm">{amount.local}</p>
+                      {amount.usd ? <p className="text-xs text-pro-muted">{amount.usd}</p> : null}
+                      <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs ${stateClass(transaction.state)}`}>{transaction.state}</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="mono-stat text-sm">{amount.local}</p>
-                    {amount.usd ? <p className="text-xs text-pro-muted">{amount.usd}</p> : null}
-                    <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs ${stateClass(transaction.state)}`}>{transaction.state}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
           <PaginationControls
             fromItem={transactionPagination.fromItem}
             onPageChange={transactionPagination.setPage}
