@@ -102,7 +102,7 @@ export function HeroSection() {
           className={`mx-auto flex items-center justify-between gap-3 transition-[max-width,border-radius,background-color,box-shadow,padding,border-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             isScrolled
               ? "max-w-[860px] rounded-[8px] border border-black/10 bg-white/88 px-3 py-2.5 shadow-[0_18px_40px_rgba(10,14,22,0.12)] backdrop-blur-xl md:px-4"
-              : "w-full max-w-none rounded-none border-b border-black/10 bg-white/40 px-4 py-4 backdrop-blur-md md:px-8"
+              : "w-full rounded-none border-b border-black/10 bg-white/40 px-6 py-4 backdrop-blur-md"
           }`}
         >
           <a className="inline-flex items-center gap-3 text-base font-extrabold tracking-[-0.03em] text-[#121212]" href="#home">
@@ -115,7 +115,7 @@ export function HeroSection() {
             />
           </a>
 
-          <div className="hidden items-center gap-1 md:flex">
+          <div className="hidden flex-1 items-center justify-center md:flex">
             {navItems.map((item) => (
               <a
                 className="rounded-[8px] px-3 py-2 text-sm font-semibold text-[#4a463c] transition hover:bg-white/55 hover:text-[#121212]"
@@ -127,7 +127,7 @@ export function HeroSection() {
             ))}
           </div>
 
-          <div className="hidden items-center gap-2 sm:flex">
+          <div className="hidden flex-shrink-0 items-center gap-2 sm:flex">
             <Link className="hero-pill-action min-h-10 px-3 py-2" href="#" onClick={(e) => e.preventDefault()}>
               Log In
             </Link>
