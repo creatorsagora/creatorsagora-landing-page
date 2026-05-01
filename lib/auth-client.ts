@@ -33,12 +33,18 @@ export type AuthUser = {
   };
   onboarding?: {
     promoter: {
+      profileTags: string[];
       goals: string[];
       creatorTypes: string[];
     };
     creator: {
       niches: string[];
-      formats: string[];
+      lookingFor: string[];
+      socialLinks: Array<{
+        platform: string;
+        url: string;
+      }>;
+      formats?: string[];
     };
   };
 };
@@ -66,12 +72,18 @@ export type SignupInput = {
   source?: "direct" | "waitlist";
   onboarding: {
     promoter: {
+      profileTags: string[];
       goals: string[];
       creatorTypes: string[];
     };
     creator: {
       niches: string[];
-      formats: string[];
+      lookingFor: string[];
+      socialLinks: Array<{
+        platform: string;
+        url: string;
+      }>;
+      formats?: string[];
     };
   };
 };
@@ -226,6 +238,78 @@ export async function fetchCampaignsRequest(token: string) {
     headers: asJsonHeaders(token)
   });
 }
+
+export type CreatorRecommendation = {
+  id: string;
+  fullName: string;
+  avatarUrl: string;
+  influencerBadgeStatus: "none" | "pending" | "verified" | string;
+  niches: string[];
+  socialLinks: Array<{
+    platform: string;
+    url: string;
+  }>;
+  followers: number;
+  engagementRate: number;
+  fitScore: number;
+  suggestedPayoutUsd: number;
+};
+
+export type CampaignRecommendationResponse = {
+  message: string;
+  aiPlan: {
+    influencersCount: number;
+    creatorsCount: number;
+    estimatedReach: number;
+  };
+  recommendedCreators: CreatorRecommendation[];
+};
+
+export type CreateCampaignInput = {
+  title: string;
+  description: string;
+  category: string;
+  goal: "Awareness" | "Viral" | "Sales";
+  budgetUsd: number;
+  startDate: string | null;
+  endDate: string | null;
+  targetAudience: {
+    locations: string[];
+    ageMin: number;
+    ageMax: number;
+    interests: string[];
+  };
+  suggestedCreatorIds: string[];
+};
+
+export async function fetchCampaignRecommendationsRequest(
+  token: string,
+  input: {
+    category: string;
+    goal: "Awareness" | "Viral" | "Sales";
+    budgetUsd: number;
+    interests: string[];
+  }
+) {
+  return request<CampaignRecommendationResponse>("/campaigns/recommendations", {
+    method: "POST",
+    headers: asJsonHeaders(token),
+    body: JSON.stringify(input)
+  });
+}
+
+export async function createCampaignRequest(token: string, input: CreateCampaignInput) {
+  return request<{
+    message: string;
+    campaign: CampaignListResponse["campaigns"][number];
+    recommendedCreators: CreatorRecommendation[];
+  }>("/campaigns", {
+    method: "POST",
+    headers: asJsonHeaders(token),
+    body: JSON.stringify(input)
+  });
+}
+
 export async function updateModeRequest(token: string, mode: UserRole) {
   return request<{ token: string; user: AuthUser }>("/auth/mode", {
     method: "PATCH",

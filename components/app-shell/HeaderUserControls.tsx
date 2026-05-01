@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Bell, Camera, ChevronDown, LogOut, Settings } from "lucide-react";
-import { clearAuthSession, updateStoredUser } from "@/lib/auth-client";
+import { useEffect, useRef, useState } from "react";
+import { Bell, BellDot, CreditCard, LogOut, Settings, Shield, SlidersHorizontal, UserCircle2 } from "lucide-react";
+import { clearAuthSession } from "@/lib/auth-client";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
 export function HeaderNotificationsButton() {
@@ -15,51 +15,22 @@ export function HeaderNotificationsButton() {
   );
 }
 
-function fileToSquareDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error("Unable to read image"));
-    reader.onload = () => {
-      const source = reader.result;
-      if (typeof source !== "string") {
-        reject(new Error("Invalid image data"));
-        return;
-      }
-
-      const image = new Image();
-      image.onerror = () => reject(new Error("Invalid image"));
-      image.onload = () => {
-        const canvas = document.createElement("canvas");
-        const size = 256;
-        canvas.width = size;
-        canvas.height = size;
-
-        const context = canvas.getContext("2d");
-        if (!context) {
-          reject(new Error("Canvas not available"));
-          return;
-        }
-
-        const sourceSize = Math.min(image.width, image.height);
-        const sourceX = (image.width - sourceSize) / 2;
-        const sourceY = (image.height - sourceSize) / 2;
-        context.drawImage(image, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size);
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
-      };
-      image.src = source;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
 export function HeaderUserDropdown() {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const { user, initials } = useAuthUser();
   const avatarUrl = user?.avatarUrl?.trim() ?? "";
+  const fullName = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "Creator";
+  const modeLabel = user?.currentMode === "creator" ? "Creator Mode" : "Promoter Mode";
+  const quickLinks = [
+    { href: "/settings/profile", icon: UserCircle2, label: "Edit Profile", hint: "Update your bio and socials" },
+    { href: "/settings/account", icon: Settings, label: "Account", hint: "Identity and region settings" },
+    { href: "/settings/security", icon: Shield, label: "Security", hint: "Password and access protection" },
+    { href: "/settings/billing", icon: CreditCard, label: "Billing", hint: "Wallet and payment methods" },
+    { href: "/settings/notifications", icon: BellDot, label: "Notifications", hint: "Alerts and campaign updates" },
+    { href: "/settings/preferences", icon: SlidersHorizontal, label: "Preferences", hint: "Theme and experience options" }
+  ] as const;
 
   useEffect(() => {
     const onClickOutside = (event: MouseEvent) => {
@@ -86,35 +57,10 @@ export function HeaderUserDropdown() {
     setOpen(false);
   };
 
-  const onAvatarFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || !user) return;
-
-    try {
-      setUploading(true);
-      const avatarDataUrl = await fileToSquareDataUrl(file);
-      updateStoredUser({ ...user, avatarUrl: avatarDataUrl });
-      setOpen(false);
-    } catch {
-      // ignore upload errors in UI-only flow
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <div className="relative" ref={menuRef}>
-      <input
-        accept="image/png,image/jpeg,image/webp"
-        className="hidden"
-        onChange={onAvatarFileChange}
-        ref={fileInputRef}
-        type="file"
-      />
-
       <button
-        className="workspace-card-soft inline-flex h-10 items-center gap-2 rounded-full px-2.5"
+        className="workspace-card-soft inline-flex h-10 items-center rounded-full px-2.5"
         onClick={() => setOpen((value) => !value)}
         type="button"
       >
@@ -125,29 +71,58 @@ export function HeaderUserDropdown() {
             initials
           )}
         </span>
-        <ChevronDown className={`text-pro-muted transition ${open ? "rotate-180" : ""}`} size={14} />
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-[220px] rounded-2xl border border-pro-primary/20 bg-pro-panel p-2 shadow-[0_18px_34px_rgba(12,16,24,0.14),0_0_20px_rgba(76,58,255,0.16)]">
+        <div className="absolute right-0 z-50 mt-2 w-[296px] overflow-hidden rounded-2xl border border-pro-primary/30 bg-[linear-gradient(160deg,rgba(13,17,31,0.95),rgba(8,11,20,0.96))] p-2.5 shadow-[0_22px_44px_rgba(12,16,24,0.36),0_0_0_1px_rgba(76,58,255,0.18),0_0_28px_rgba(34,211,238,0.12)] backdrop-blur-xl">
+          <div className="workspace-card-soft mb-2 rounded-xl border-pro-primary/25 bg-gradient-to-r from-pro-primary/16 via-pro-primary/8 to-pro-accent/10 p-3">
+            <div className="flex items-center gap-3">
+              <span className="grid size-10 place-items-center overflow-hidden rounded-full border border-pro-primary/30 bg-gradient-to-br from-[#30416d] to-[#4C3AFF] text-xs font-semibold text-white shadow-[0_0_18px_rgba(76,58,255,0.35)]">
+                {avatarUrl ? <img alt="User avatar" className="h-full w-full object-cover" src={avatarUrl} /> : initials}
+              </span>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-pro-main">{fullName}</p>
+                <p className="truncate text-xs text-pro-muted">{user?.email || "creator@agora.app"}</p>
+              </div>
+            </div>
+            <span className="mt-2 inline-flex rounded-full border border-pro-accent/40 bg-pro-accent/12 px-2.5 py-1 text-[11px] font-semibold text-pro-accent">
+              {modeLabel}
+            </span>
+          </div>
+
+          <div className="space-y-1.5">
+            {quickLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-pro-surface bg-white/[0.02] px-3 py-2.5 transition hover:border-pro-primary/35 hover:bg-pro-primary/10"
+                  href={item.href}
+                  key={item.href}
+                  onClick={() => setOpen(false)}
+                >
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-pro-primary/25 bg-pro-primary/14 text-pro-accent transition group-hover:border-pro-accent/45 group-hover:bg-pro-accent/12">
+                    <Icon size={14} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium text-pro-main">{item.label}</span>
+                    <span className="block truncate text-[11px] text-pro-muted">{item.hint}</span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="my-2 border-t border-pro-surface" />
+
           <button
-            className="workspace-card-soft inline-flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-pro-primary/10"
-            disabled={!user || uploading}
-            onClick={() => fileInputRef.current?.click()}
+            className="group flex w-full items-center gap-3 rounded-xl border border-[#ff4d6d55] bg-[#ff4d6d12] px-3 py-2.5 text-sm text-[#ff98aa] transition hover:bg-[#ff4d6d1f]"
+            onClick={onLogout}
             type="button"
           >
-            <Camera size={14} className="text-pro-accent" />
-            {uploading ? "Uploading..." : "Upload Photo"}
-          </button>
-
-          <Link className="workspace-card-soft mt-1 inline-flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-pro-primary/10" href="/settings/profile" onClick={() => setOpen(false)}>
-            <Settings size={14} className="text-pro-accent" />
-            Settings
-          </Link>
-
-          <button className="workspace-card-soft mt-1 inline-flex w-full items-center gap-2 px-3 py-2 text-sm text-[#ff8b9e] hover:bg-[#ff4d6d1f]" onClick={onLogout} type="button">
-            <LogOut size={14} />
-            Sign Out
+            <span className="grid size-8 place-items-center rounded-lg border border-[#ff4d6d66] bg-[#ff4d6d1f]">
+              <LogOut size={14} />
+            </span>
+            <span className="font-medium">Sign Out</span>
           </button>
         </div>
       ) : null}

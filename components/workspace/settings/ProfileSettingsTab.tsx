@@ -1,16 +1,60 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Camera, Plus } from "lucide-react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { usePagination } from "@/hooks/usePagination";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAuthUser } from "@/hooks/useAuthUser";
 import { PaginationControls } from "@/components/ui/PaginationControls";
 import { useSettingsContext } from "@/components/workspace/settings/SettingsContext";
 import { renderSocialIcon } from "@/components/workspace/settings/social-icons";
+import { updateStoredUser } from "@/lib/auth-client";
+
+function fileToSquareDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Unable to read image"));
+    reader.onload = () => {
+      const source = reader.result;
+      if (typeof source !== "string") {
+        reject(new Error("Invalid image data"));
+        return;
+      }
+
+      const image = new Image();
+      image.onerror = () => reject(new Error("Invalid image"));
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        const size = 256;
+        canvas.width = size;
+        canvas.height = size;
+
+        const context = canvas.getContext("2d");
+        if (!context) {
+          reject(new Error("Canvas not available"));
+          return;
+        }
+
+        const sourceSize = Math.min(image.width, image.height);
+        const sourceX = (image.width - sourceSize) / 2;
+        const sourceY = (image.height - sourceSize) / 2;
+        context.drawImage(image, sourceX, sourceY, sourceSize, sourceSize, 0, 0, size, size);
+        resolve(canvas.toDataURL("image/jpeg", 0.9));
+      };
+      image.src = source;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 export function ProfileSettingsTab() {
   const { state, setState } = useSettingsContext();
   const { role, setRole, creatorBadgeStatus, hasInfluencerBadge, setInfluencerBadgeStatus } = useUserRole();
+  const { user, initials } = useAuthUser();
+  const avatarUrl = user?.avatarUrl?.trim() ?? "";
   const socialLinksPagination = usePagination(state.profile.socialLinks, 5);
+  const avatarFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const updateProfile = (patch: Partial<typeof state.profile>) =>
     setState((previous) => ({ ...previous, profile: { ...previous.profile, ...patch } }));
@@ -22,9 +66,51 @@ export function ProfileSettingsTab() {
     updateProfile({ categories: [...state.profile.categories, next] });
   };
 
+  const onAvatarFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !user) return;
+
+    try {
+      setUploadingAvatar(true);
+      const avatarDataUrl = await fileToSquareDataUrl(file);
+      updateStoredUser({ ...user, avatarUrl: avatarDataUrl });
+    } catch {
+      // Ignore avatar upload errors in UI-only flow
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   return (
     <div className="grid gap-4 xl:grid-cols-[1.15fr_1fr]">
       <div className="space-y-4">
+        <article className="workspace-card-soft p-4">
+          <h3 className="font-display text-lg font-semibold">Profile Photo</h3>
+          <p className="text-pro-muted mt-1 text-sm">This photo appears in your dashboard header and dropdown.</p>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="grid size-14 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-[#30416d] to-[#4C3AFF] text-sm font-semibold text-white">
+              {avatarUrl ? <img alt="User avatar" className="h-full w-full object-cover" src={avatarUrl} /> : initials}
+            </span>
+            <input
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={onAvatarFileChange}
+              ref={avatarFileInputRef}
+              type="file"
+            />
+            <button
+              className="btn-pro-secondary h-10 px-4 py-0 text-sm"
+              onClick={() => avatarFileInputRef.current?.click()}
+              type="button"
+              disabled={uploadingAvatar}
+            >
+              <Camera size={14} />
+              {uploadingAvatar ? "Uploading..." : "Upload Photo"}
+            </button>
+          </div>
+        </article>
+
         <article className="workspace-card-soft p-4">
           <h3 className="font-display text-lg font-semibold">Personal Information</h3>
           <div className="mt-3 grid gap-3">

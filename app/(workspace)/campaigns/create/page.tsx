@@ -13,7 +13,7 @@ export default function CreateCampaignPage() {
   return (
     <WorkspaceShell
       title="Create Campaign"
-      subtitle="Step 1 of 3"
+      subtitle="Plan budget, get AI-matched creators, then launch"
       topActions={
         !ready ? null : canCreateCampaign ? (
           <button className="btn-pro-secondary inline-flex h-10 items-center gap-1.5 px-4 py-0 text-sm">

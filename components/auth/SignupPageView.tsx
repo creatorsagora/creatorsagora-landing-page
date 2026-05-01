@@ -10,31 +10,17 @@ import { persistAuthSession, signupRequest } from "@/lib/auth-client";
 import { resolveLanguageFromLocale } from "@/lib/languages";
 import { persistUserRole, type UserRole } from "@/lib/user-role";
 
-const promoterGoalOptions = [
-  "Brand Awareness",
-  "Sales & Conversion",
-  "Product Launch Hype",
-  "Community Growth",
-  "Event Promotion",
-  "UGC Content Pipeline"
-];
+const promoterProfileOptions = ["Artist / Musician", "Brand / Startup", "Agency / Manager", "Event Organizer"];
+const promoterGoalOptions = ["Find Niche Creators", "Boost Brand Awareness", "Drive Sales", "Launch New Product", "Grow Community"];
 
-const promoterCreatorTypeOptions = ["Micro Creators", "Mid-Tier Creators", "Macro Creators", "Niche Experts", "UGC Creators", "Influencers"];
+const creatorNicheOptions = ["Fashion", "Beauty", "Lifestyle", "Tech", "Fitness", "Food", "Travel", "Gaming", "Finance", "Education"];
+const creatorLookingForOptions = ["Brand Partnerships", "Long-Term Retainers", "UGC Projects", "Event Collaborations", "Affiliate Deals"];
+const socialPlatforms = ["Instagram", "TikTok", "YouTube", "X", "LinkedIn", "Website", "Other"];
 
-const creatorNicheOptions = [
-  "Fashion",
-  "Beauty",
-  "Lifestyle",
-  "Tech",
-  "Fitness",
-  "Food",
-  "Travel",
-  "Gaming",
-  "Finance",
-  "Education"
-];
-
-const creatorFormatOptions = ["Short-form Video", "Long-form Video", "Photo Content", "Live Sessions", "Story Posts", "Thread Posts"];
+type CreatorSocialLink = {
+  platform: string;
+  url: string;
+};
 
 function toggleSelection(values: string[], value: string) {
   return values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
@@ -44,6 +30,19 @@ function chipClass(selected: boolean) {
   return selected
     ? "border-pro-primary/55 bg-pro-primary/18 text-pro-main shadow-[0_0_0_1px_rgba(76,58,255,0.35)]"
     : "border-pro-surface bg-pro-primary/6 text-pro-muted hover:border-pro-primary/35 hover:text-pro-main";
+}
+
+function addCustomValue(values: string[], value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return values;
+  if (values.some((entry) => entry.toLowerCase() === trimmed.toLowerCase())) return values;
+  return [...values, trimmed];
+}
+
+function normalizeCreatorSocialLinks(links: CreatorSocialLink[]) {
+  return links
+    .map((link) => ({ platform: link.platform.trim(), url: link.url.trim() }))
+    .filter((link) => link.platform && link.url);
 }
 
 export function SignupPageView() {
@@ -57,10 +56,17 @@ export function SignupPageView() {
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("password123");
-  const [promoterGoals, setPromoterGoals] = useState<string[]>(["Brand Awareness"]);
-  const [promoterCreatorTypes, setPromoterCreatorTypes] = useState<string[]>(["Micro Creators"]);
+
+  const [promoterProfileTags, setPromoterProfileTags] = useState<string[]>(["Brand / Startup"]);
+  const [promoterGoals, setPromoterGoals] = useState<string[]>(["Find Niche Creators"]);
+  const [promoterGoalCustomInput, setPromoterGoalCustomInput] = useState("");
+
   const [creatorNiches, setCreatorNiches] = useState<string[]>(["Lifestyle"]);
-  const [creatorFormats, setCreatorFormats] = useState<string[]>(["Short-form Video"]);
+  const [creatorNicheCustomInput, setCreatorNicheCustomInput] = useState("");
+  const [creatorLookingFor, setCreatorLookingFor] = useState<string[]>(["Brand Partnerships"]);
+  const [creatorLookingForCustomInput, setCreatorLookingForCustomInput] = useState("");
+  const [creatorSocialLinks, setCreatorSocialLinks] = useState<CreatorSocialLink[]>([{ platform: "Instagram", url: "" }]);
+
   const [acceptedTerms, setAcceptedTerms] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -102,20 +108,21 @@ export function SignupPageView() {
         setError("You must agree to the Terms of Service and Privacy Policy.");
         return false;
       }
-      if (role === "promoter" && promoterGoals.length === 0) {
-        setError("Select at least one promoter goal so AI can optimize your creator matching.");
+
+      if (role === "promoter" && promoterProfileTags.length === 0) {
+        setError("Select at least one promoter profile tag.");
         return false;
       }
-      if (role === "promoter" && promoterCreatorTypes.length === 0) {
-        setError("Select at least one creator type preference for promoter onboarding.");
+      if (role === "promoter" && promoterGoals.length === 0) {
+        setError("Select at least one promoter objective so AI can match creator niches.");
+        return false;
+      }
+      if (role === "creator" && creatorLookingFor.length === 0) {
+        setError("Select at least one creator objective.");
         return false;
       }
       if (role === "creator" && creatorNiches.length === 0) {
-        setError("Select at least one creator niche so AI can match relevant campaigns to you.");
-        return false;
-      }
-      if (role === "creator" && creatorFormats.length === 0) {
-        setError("Select at least one content format for creator onboarding.");
+        setError("Select at least one creator niche so AI can match relevant campaigns.");
         return false;
       }
     }
@@ -152,12 +159,14 @@ export function SignupPageView() {
         source: isWaitlistFlow ? "waitlist" : "direct",
         onboarding: {
           promoter: {
+            profileTags: promoterProfileTags,
             goals: promoterGoals,
-            creatorTypes: promoterCreatorTypes
+            creatorTypes: []
           },
           creator: {
             niches: creatorNiches,
-            formats: creatorFormats
+            lookingFor: creatorLookingFor,
+            socialLinks: normalizeCreatorSocialLinks(creatorSocialLinks)
           }
         }
       });
@@ -189,7 +198,9 @@ export function SignupPageView() {
       <form className="space-y-3" onSubmit={(event) => event.preventDefault()}>
         <div className="workspace-card-soft rounded-xl p-3">
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-semibold text-pro-main">Step {step} of {totalSteps}</p>
+            <p className="text-sm font-semibold text-pro-main">
+              Step {step} of {totalSteps}
+            </p>
             <p className="text-pro-muted text-xs">{step === 1 ? "Account" : step === 2 ? "Location & Mode" : "Onboarding"}</p>
           </div>
           <div className="h-2 overflow-hidden rounded-full border border-pro-surface bg-pro-primary/10">
@@ -298,20 +309,37 @@ export function SignupPageView() {
 
         {step === 3 ? (
           <>
-            <div className="workspace-card-soft space-y-3 rounded-xl p-3 sm:p-4">
+            <div className="workspace-card-soft space-y-4 rounded-xl p-3 sm:p-4">
               <div>
-                <p className="text-sm font-semibold text-pro-main">
-                  {role === "promoter" ? "Promoter Onboarding" : "Creator Onboarding"}
-                </p>
+                <p className="text-sm font-semibold text-pro-main">{role === "promoter" ? "Promoter Onboarding" : "Creator Onboarding"}</p>
                 <p className="text-pro-muted mt-1 text-xs">
                   {role === "promoter"
-                    ? "Tell us what outcomes you want so AI can recommend the right creator mix."
-                    : "Select your niches and content strengths so AI matches you with the right campaigns."}
+                    ? "Tell us your profile and priorities so AI can recommend the right creators for every budget."
+                    : "Tell us your niches and goals so AI can route matching campaigns to you."}
                 </p>
               </div>
 
               {role === "promoter" ? (
                 <>
+                  <div>
+                    <p className="text-pro-muted mb-2 text-xs uppercase tracking-[0.12em]">Who Are You?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {promoterProfileOptions.map((profile) => {
+                        const selected = promoterProfileTags.includes(profile);
+                        return (
+                          <button
+                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${chipClass(selected)}`}
+                            key={profile}
+                            onClick={() => setPromoterProfileTags((current) => toggleSelection(current, profile))}
+                            type="button"
+                          >
+                            {profile}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   <div>
                     <p className="text-pro-muted mb-2 text-xs uppercase tracking-[0.12em]">What Are You Looking For?</p>
                     <div className="flex flex-wrap gap-2">
@@ -329,29 +357,66 @@ export function SignupPageView() {
                         );
                       })}
                     </div>
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        className="workspace-input h-9"
+                        placeholder="Other objective..."
+                        value={promoterGoalCustomInput}
+                        onChange={(event) => setPromoterGoalCustomInput(event.target.value)}
+                      />
+                      <button
+                        className="btn-pro-secondary h-9 px-3 py-0 text-xs"
+                        type="button"
+                        onClick={() => {
+                          setPromoterGoals((current) => addCustomValue(current, promoterGoalCustomInput));
+                          setPromoterGoalCustomInput("");
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
                   </div>
 
+                </>
+              ) : (
+                <>
                   <div>
-                    <p className="text-pro-muted mb-2 text-xs uppercase tracking-[0.12em]">Preferred Creator Type</p>
+                    <p className="text-pro-muted mb-2 text-xs uppercase tracking-[0.12em]">What Are You Looking For?</p>
                     <div className="flex flex-wrap gap-2">
-                      {promoterCreatorTypeOptions.map((creatorType) => {
-                        const selected = promoterCreatorTypes.includes(creatorType);
+                      {creatorLookingForOptions.map((goal) => {
+                        const selected = creatorLookingFor.includes(goal);
                         return (
                           <button
                             className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${chipClass(selected)}`}
-                            key={creatorType}
-                            onClick={() => setPromoterCreatorTypes((current) => toggleSelection(current, creatorType))}
+                            key={goal}
+                            onClick={() => setCreatorLookingFor((current) => toggleSelection(current, goal))}
                             type="button"
                           >
-                            {creatorType}
+                            {goal}
                           </button>
                         );
                       })}
                     </div>
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        className="workspace-input h-9"
+                        placeholder="Other objective..."
+                        value={creatorLookingForCustomInput}
+                        onChange={(event) => setCreatorLookingForCustomInput(event.target.value)}
+                      />
+                      <button
+                        className="btn-pro-secondary h-9 px-3 py-0 text-xs"
+                        type="button"
+                        onClick={() => {
+                          setCreatorLookingFor((current) => addCustomValue(current, creatorLookingForCustomInput));
+                          setCreatorLookingForCustomInput("");
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
                   </div>
-                </>
-              ) : (
-                <>
+
                   <div>
                     <p className="text-pro-muted mb-2 text-xs uppercase tracking-[0.12em]">Creator Niche Categories</p>
                     <div className="flex flex-wrap gap-2">
@@ -369,24 +434,76 @@ export function SignupPageView() {
                         );
                       })}
                     </div>
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        className="workspace-input h-9"
+                        placeholder="Other niche..."
+                        value={creatorNicheCustomInput}
+                        onChange={(event) => setCreatorNicheCustomInput(event.target.value)}
+                      />
+                      <button
+                        className="btn-pro-secondary h-9 px-3 py-0 text-xs"
+                        type="button"
+                        onClick={() => {
+                          setCreatorNiches((current) => addCustomValue(current, creatorNicheCustomInput));
+                          setCreatorNicheCustomInput("");
+                        }}
+                      >
+                        Add
+                      </button>
+                    </div>
                   </div>
 
                   <div>
-                    <p className="text-pro-muted mb-2 text-xs uppercase tracking-[0.12em]">Content Formats</p>
-                    <div className="flex flex-wrap gap-2">
-                      {creatorFormatOptions.map((format) => {
-                        const selected = creatorFormats.includes(format);
-                        return (
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <p className="text-pro-muted text-xs uppercase tracking-[0.12em]">Social Media Links</p>
+                      <button
+                        className="btn-pro-secondary h-8 px-3 py-0 text-xs"
+                        type="button"
+                        onClick={() =>
+                          setCreatorSocialLinks((current) => [...current, { platform: "Instagram", url: "" }])
+                        }
+                      >
+                        Add Social Link
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {creatorSocialLinks.map((link, index) => (
+                        <div className="grid gap-2 sm:grid-cols-[150px_1fr_auto]" key={`${link.platform}-${index}`}>
+                          <select
+                            className="workspace-input h-9"
+                            value={link.platform}
+                            onChange={(event) => {
+                              const next = [...creatorSocialLinks];
+                              next[index] = { ...next[index], platform: event.target.value };
+                              setCreatorSocialLinks(next);
+                            }}
+                          >
+                            {socialPlatforms.map((platform) => (
+                              <option key={platform} value={platform}>
+                                {platform}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            className="workspace-input h-9"
+                            placeholder="https://..."
+                            value={link.url}
+                            onChange={(event) => {
+                              const next = [...creatorSocialLinks];
+                              next[index] = { ...next[index], url: event.target.value };
+                              setCreatorSocialLinks(next);
+                            }}
+                          />
                           <button
-                            className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${chipClass(selected)}`}
-                            key={format}
-                            onClick={() => setCreatorFormats((current) => toggleSelection(current, format))}
+                            className="btn-pro-secondary h-9 px-3 py-0 text-xs"
+                            onClick={() => setCreatorSocialLinks((current) => current.filter((_, currentIndex) => currentIndex !== index))}
                             type="button"
                           >
-                            {format}
+                            Remove
                           </button>
-                        );
-                      })}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </>
