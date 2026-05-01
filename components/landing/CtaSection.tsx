@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 const roboticArmImage = "/robotic-hand-pointing-against-black.png";
@@ -57,7 +59,8 @@ export function CtaSection() {
                 <span className="absolute inset-[-6px] -z-10 rounded-full bg-[linear-gradient(90deg,rgba(234,255,112,0.58),rgba(76,58,255,0.55),rgba(255,118,208,0.42))] blur-[14px]" />
                 <Link
                   className="inline-flex min-h-[58px] items-center rounded-full border border-black/14 bg-[#111111] px-7 py-3 text-base font-semibold text-white shadow-[0_22px_40px_rgba(17,17,17,0.18)] transition hover:-translate-y-0.5"
-                  href="/waitlist"
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
                 >
                   Join the Waitlist
                   <span className="ml-2 text-[#d4ff7f]">*</span>

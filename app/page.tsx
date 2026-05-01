@@ -1,3 +1,5 @@
+"use client";
+
 import { CtaSection } from "@/components/landing/CtaSection";
 import { FeaturesSection } from "@/components/landing/FeaturesSection";
 import { FooterSection } from "@/components/landing/FooterSection";
