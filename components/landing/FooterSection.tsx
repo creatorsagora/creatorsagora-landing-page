@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 
 const footerColumns = [
@@ -39,7 +41,8 @@ export function FooterSection() {
 
           <a
             className="inline-flex min-h-[52px] items-center justify-center rounded-[8px] border border-white/16 bg-white px-5 py-3 text-sm font-bold text-[#05060b] shadow-[0_18px_44px_rgba(143,243,238,0.16)] transition hover:-translate-y-0.5"
-            href="/auth/signup"
+            href="#"
+            onClick={(e) => e.preventDefault()}
           >
             Start Free
           </a>
